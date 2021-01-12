@@ -5,6 +5,7 @@ import sys
 import urllib.request
 import urllib.error
 import urllib.parse
+import socks
 from contextlib import suppress
 
 from tts_tools.libtts import (
@@ -24,6 +25,7 @@ from tts_tools.util import (
     strip_mime_parms
 )
 
+no_proxy = socket.socket
 
 def prefetch_file(filename,
                   refetch=False,
@@ -54,6 +56,7 @@ def prefetch_file(filename,
         raise
 
     done = set()
+    tor_enabled = False
     for path, url in urls:
 
         if semaphore and semaphore.acquire(blocking=False):
@@ -129,6 +132,15 @@ def prefetch_file(filename,
         }
         request = urllib.request.Request(url=fetch_url, headers=headers)
 
+        if 'imgur' in fetch_url and not tor_enabled:
+            socket.socket = socks.socksocket
+            tor_enabled = True
+        elif 'imgur' not in fetch_url and tor_enabled:
+            socket.socket = no_proxy
+            tor_enabled = False
+        if tor_enabled:
+            print('[TOR]', end='')
+
         try:
             response = urllib.request.urlopen(request, timeout=timeout)
 
@@ -201,6 +213,8 @@ def prefetch_file(filename,
 
 
 def prefetch_files(args, semaphore=None):
+    SOCKS_PORT = 9050
+    socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, '127.0.0.1', SOCKS_PORT)
 
     for infile_name in args.infile_names:
 

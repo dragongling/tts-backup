@@ -6,3 +6,7 @@ build/
 bin/
 include/
 lib/
+
+# PyCharm files
+.idea/
+venv/

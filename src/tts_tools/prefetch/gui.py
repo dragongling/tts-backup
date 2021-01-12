@@ -177,3 +177,5 @@ def gui_entry():
     gui = GUI(root)
     gui.pack(fill=BOTH, expand=True)
     root.mainloop()
+
+gui_entry()
