@@ -27,6 +27,7 @@ from tts_tools.util import (
 
 no_proxy = socket.socket
 
+
 def prefetch_file(filename,
                   refetch=False,
                   ignore_content_type=False,
@@ -57,7 +58,8 @@ def prefetch_file(filename,
 
     done = set()
     tor_enabled = False
-    for path, url in urls:
+    urls = list(urls)
+    for idx, (path, url) in enumerate(urls):
 
         if semaphore and semaphore.acquire(blocking=False):
             print("Aborted.")
@@ -120,6 +122,7 @@ def prefetch_file(filename,
             done.add(url)
             continue
 
+        print(f"[{idx} / {len(urls)}]", end=' ')
         print("{} ".format(url), end="", flush=True)
 
         if dry_run:
@@ -213,8 +216,10 @@ def prefetch_file(filename,
 
 
 def prefetch_files(args, semaphore=None):
+    print('Establishing TOR connection')
     SOCKS_PORT = 9050
     socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, '127.0.0.1', SOCKS_PORT)
+    print("Done")
 
     for infile_name in args.infile_names:
 
